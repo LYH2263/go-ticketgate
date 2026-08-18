@@ -1,6 +1,11 @@
 package codec
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrCorrupt = errors.New("codec: corrupt")
 
 // Record 单条 TLV。
 type Record struct {
@@ -96,7 +101,7 @@ func DecodeMap(b []byte, header bool, strictUnknown bool) (*Map, error) {
 	for r.Remaining() > 0 {
 		id, val, err := r.TLV()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("codec: corrupt")
 		}
 		if !first && id < last {
 			return nil, errFieldOrder()

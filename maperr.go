@@ -1,9 +1,11 @@
 package ticketgate
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/LYH2263/go-ticketgate/internal/codec"
 	"github.com/LYH2263/go-ticketgate/internal/issue"
 	"github.com/LYH2263/go-ticketgate/internal/keyring"
 	"github.com/LYH2263/go-ticketgate/internal/nonce"
@@ -17,6 +19,9 @@ import (
 func mapErr(err error) error {
 	if err == nil {
 		return nil
+	}
+	if errors.Is(err, token.ErrCorrupt) || errors.Is(err, codec.ErrCorrupt) {
+		return ErrCorrupt
 	}
 	s := err.Error()
 	switch {

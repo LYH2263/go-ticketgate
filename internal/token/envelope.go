@@ -1,10 +1,13 @@
 package token
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/LYH2263/go-ticketgate/internal/codec"
 )
+
+var ErrCorrupt = errors.New("token: corrupt")
 
 type Envelope struct {
 	Version byte

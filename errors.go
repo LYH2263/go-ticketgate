@@ -29,4 +29,5 @@ var (
 	ErrAlg                 = errors.New("ticketgate: algorithm")
 	ErrEmptyJTI            = errors.New("ticketgate: empty jti")
 	ErrBind                = errors.New("ticketgate: bind mismatch")
+	ErrCorrupt             = errors.New("ticketgate: corrupt")
 )
