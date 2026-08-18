@@ -45,10 +45,16 @@ func (i *Issuer) Issue(d Draft) ([]byte, string, token.Payload, error) {
 	}
 	cur, err := i.ring.Current()
 	if err != nil {
+		if i.nonces != nil && p.Nonce != "" {
+			i.nonces.Release(p.Nonce)
+		}
 		return nil, "", token.Payload{}, err
 	}
 	raw, err := token.IssueBytes(cur.Material.KID, cur.Material.Alg, cur.Material.Secret, p)
 	if err != nil {
+		if i.nonces != nil && p.Nonce != "" {
+			i.nonces.Release(p.Nonce)
+		}
 		return nil, "", token.Payload{}, err
 	}
 	if i.nonces != nil && p.Nonce != "" {

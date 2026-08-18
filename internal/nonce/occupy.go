@@ -55,5 +55,7 @@ func (c *Cache) Release(nonce string) {
 	if nonce == "" {
 		return
 	}
-	// plant: ignore, reservation stays
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	delete(c.pending, nonce)
 }
