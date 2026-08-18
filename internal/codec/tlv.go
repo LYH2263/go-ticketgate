@@ -9,10 +9,9 @@ type Record struct {
 }
 
 type Map struct {
-	recs []Record
+	recs    []Record
+	scratch []byte
 }
-
-var decodeScratch []byte
 
 func NewMap() *Map { return &Map{} }
 
@@ -22,10 +21,13 @@ func (m *Map) Add(id FieldID, v []byte) {
 	m.recs = append(m.recs, Record{ID: id, Value: cp})
 }
 
+// addScratch 将字段值追加到 m.scratch，并把记录切片指向该缓冲区。
+// scratch 是 per-Map 的（而非全局），因此不同 DecodeMap 调用产出的
+// 记录不会共享同一块缓冲区，避免后续解码覆盖先前解码返回的字节切片。
 func (m *Map) addScratch(id FieldID, v []byte) {
-	off := len(decodeScratch)
-	decodeScratch = append(decodeScratch, v...)
-	m.recs = append(m.recs, Record{ID: id, Value: decodeScratch[off : off+len(v)]})
+	off := len(m.scratch)
+	m.scratch = append(m.scratch, v...)
+	m.recs = append(m.recs, Record{ID: id, Value: m.scratch[off : off+len(v)]})
 }
 
 func (m *Map) AddString(id FieldID, s string) { m.Add(id, []byte(s)) }
@@ -96,7 +98,6 @@ func EncodeMap(m *Map, max int) ([]byte, error) {
 }
 
 func DecodeMap(b []byte, header bool, strictUnknown bool) (*Map, error) {
-	decodeScratch = decodeScratch[:0]
 	r := NewReader(b)
 	m := NewMap()
 	var last FieldID
