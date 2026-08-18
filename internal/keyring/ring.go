@@ -23,6 +23,7 @@ type Ring struct {
 	current string
 	keys    map[string]*Key
 	order   []string
+	closed  bool
 }
 
 func New(clk clock.Clock, grace time.Duration, alg token.Alg) (*Ring, error) {
@@ -72,15 +73,20 @@ func (r *Ring) Current() (Key, error) {
 	return cloneKey(k), nil
 }
 
+func (r *Ring) Close() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.closed = true
+	r.keys = nil
+	r.order = nil
+	r.current = ""
+}
+
 func (r *Ring) Get(kid string) (Key, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.sweepLocked()
-	k, ok := r.keys[kid]
-	if !ok {
-		return Key{}, fmt.Errorf("keyring: unknown kid")
-	}
-	return cloneKey(k), nil
+	return cloneKey(r.keys[kid]), nil
 }
 
 func (r *Ring) LookupVerify(kid string) (Key, error) {
