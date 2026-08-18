@@ -87,7 +87,9 @@ func Run(raw []byte, d Deps) Outcome {
 	}
 
 	if d.Revoker != nil {
-		_ = d.Revoker.Reload()
+		if err := d.Revoker.Reload(); err != nil {
+			return Outcome{Stage: StageRevoke, Header: h, Payload: p, Now: now, Err: err}
+		}
 		if p.JTI != "" && d.Revoker.IsRevoked(p.JTI) {
 			return Outcome{Stage: StageRevoke, Header: h, Payload: p, Now: now, Err: fmt.Errorf("verify: revoked")}
 		}
