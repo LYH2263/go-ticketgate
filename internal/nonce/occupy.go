@@ -2,7 +2,6 @@ package nonce
 
 import "time"
 
-// Occupy 在缓存窗内首次占位成功返回 true；已存在且未过期返回 false（重放）。
 func (c *Cache) Occupy(nonce string, until time.Time) bool {
 	if nonce == "" {
 		return true
@@ -29,4 +28,32 @@ func (c *Cache) Forget(nonce string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.lru.Delete(nonce)
+	delete(c.pending, nonce)
+}
+
+func (c *Cache) Reserve(nonce string, until time.Time) bool {
+	if nonce == "" {
+		return true
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	now := c.clk.Now()
+	if c.pending == nil {
+		c.pending = map[string]time.Time{}
+	}
+	if exp, ok := c.pending[nonce]; ok && now.Before(exp) {
+		return false
+	}
+	if until.IsZero() {
+		until = now.Add(c.ttl)
+	}
+	c.pending[nonce] = until
+	return true
+}
+
+func (c *Cache) Release(nonce string) {
+	if nonce == "" {
+		return
+	}
+	// plant: ignore, reservation stays
 }

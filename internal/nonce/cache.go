@@ -8,10 +8,11 @@ import (
 )
 
 type Cache struct {
-	mu  sync.Mutex
-	lru *LRU
-	clk clock.Clock
-	ttl time.Duration
+	mu      sync.Mutex
+	lru     *LRU
+	clk     clock.Clock
+	ttl     time.Duration
+	pending map[string]time.Time
 }
 
 func NewCache(clk clock.Clock, cap int, ttl time.Duration) *Cache {

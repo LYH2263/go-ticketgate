@@ -137,6 +137,7 @@ func newParts(cfg config) (*keyring.Ring, *issue.Issuer, *verify.Verifier, *revo
 	rev := revoke.New(cfg.clk, cfg.revokeMode)
 	nc := nonce.NewCache(cfg.clk, cfg.nonceCap, cfg.nonceTTL)
 	iss := issue.New(ring, cfg.clk, cfg.policy())
+	iss.SetNonceCache(nc)
 	ver := verify.New(verify.Deps{
 		Ring:    ring,
 		Revoker: rev,
