@@ -112,7 +112,7 @@ func cloneKey(k *Key) Key {
 		Material: Material{
 			KID:    k.Material.KID,
 			Alg:    k.Material.Alg,
-			Secret: k.Material.Secret,
+			Secret: CloneSecret(k.Material.Secret),
 		},
 		Status:   k.Status,
 		Created:  k.Created,
@@ -121,12 +121,10 @@ func cloneKey(k *Key) Key {
 }
 
 func (r *Ring) CurrentRef() (*Key, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
-	r.sweepLocked()
-	k, ok := r.keys[r.current]
-	if !ok || k.Status != StatusActive {
-		return nil, fmt.Errorf("keyring: no current key")
+	k, err := r.Current()
+	if err != nil {
+		return nil, err
 	}
-	return k, nil
+	cp := k
+	return &cp, nil
 }

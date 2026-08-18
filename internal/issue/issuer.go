@@ -38,11 +38,12 @@ func (i *Issuer) Issue(d Draft) ([]byte, string, token.Payload, error) {
 	if err != nil {
 		return nil, "", token.Payload{}, err
 	}
-	cur, err := i.ring.CurrentRef()
+	cur, err := i.ring.Current()
 	if err != nil {
 		return nil, "", token.Payload{}, err
 	}
-	raw, err := token.IssueBytes(cur.Material.KID, cur.Material.Alg, cur.Material.Secret, p)
+	sec := keyring.CloneSecret(cur.Material.Secret)
+	raw, err := token.IssueBytes(cur.Material.KID, cur.Material.Alg, sec, p)
 	if err != nil {
 		return nil, "", token.Payload{}, err
 	}
