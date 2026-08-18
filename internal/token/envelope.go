@@ -58,10 +58,10 @@ func Encode(h Header, p Payload, secret []byte) ([]byte, error) {
 func Split(raw []byte) (Envelope, error) {
 	var env Envelope
 	if len(raw) < codec.MinEnvelopeSize(32) {
-		return env, fmt.Errorf("token: truncated")
+		return env, fmt.Errorf("%w: truncated", ErrCorrupt)
 	}
 	if !codec.MagicOK(raw) {
-		return env, fmt.Errorf("token: bad magic")
+		return env, fmt.Errorf("%w: bad magic", ErrCorrupt)
 	}
 	r := codec.NewReader(raw)
 	if _, err := r.Slice(4); err != nil {
