@@ -35,7 +35,9 @@ func Run(raw []byte, d Deps) Outcome {
 }
 
 func RunContext(ctx context.Context, raw []byte, d Deps) Outcome {
-	_ = ctx
+	if err := ctx.Err(); err != nil {
+		return fail(StageContext, err)
+	}
 	if d.Clock == nil {
 		d.Clock = clock.Real{}
 	}

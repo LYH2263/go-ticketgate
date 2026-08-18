@@ -12,6 +12,7 @@ const (
 	StageParse   Stage = "parse"
 	StageKID     Stage = "kid"
 	StageMAC     Stage = "mac"
+	StageContext Stage = "context"
 	StageTime    Stage = "time"
 	StageAud     Stage = "audience"
 	StageRevoke  Stage = "revoke"
