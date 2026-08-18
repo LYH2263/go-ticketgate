@@ -1,0 +1,32 @@
+package ticketgate
+
+import "errors"
+
+var (
+	ErrInvalidToken        = errors.New("ticketgate: invalid token")
+	ErrBadMagic            = errors.New("ticketgate: bad magic")
+	ErrUnsupportedVersion  = errors.New("ticketgate: unsupported version")
+	ErrTruncated           = errors.New("ticketgate: truncated")
+	ErrTooLarge            = errors.New("ticketgate: too large")
+	ErrFieldOrder          = errors.New("ticketgate: field order")
+	ErrUnknownField        = errors.New("ticketgate: unknown field")
+	ErrDuplicateField      = errors.New("ticketgate: duplicate field")
+	ErrBadMAC              = errors.New("ticketgate: bad mac")
+	ErrUnknownKID          = errors.New("ticketgate: unknown kid")
+	ErrKeyRetired          = errors.New("ticketgate: key retired")
+	ErrExpired             = errors.New("ticketgate: expired")
+	ErrNotYetValid         = errors.New("ticketgate: not yet valid")
+	ErrAudience            = errors.New("ticketgate: audience mismatch")
+	ErrIssuer              = errors.New("ticketgate: issuer mismatch")
+	ErrSubject             = errors.New("ticketgate: subject mismatch")
+	ErrRevoked             = errors.New("ticketgate: revoked")
+	ErrNonceReplay         = errors.New("ticketgate: nonce replay")
+	ErrNoCurrentKey        = errors.New("ticketgate: no current key")
+	ErrTTL                 = errors.New("ticketgate: ttl out of range")
+	ErrRequired            = errors.New("ticketgate: required claim missing")
+	ErrClosed              = errors.New("ticketgate: closed")
+	ErrScope               = errors.New("ticketgate: scope")
+	ErrAlg                 = errors.New("ticketgate: algorithm")
+	ErrEmptyJTI            = errors.New("ticketgate: empty jti")
+	ErrBind                = errors.New("ticketgate: bind mismatch")
+)
