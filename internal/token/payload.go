@@ -127,7 +127,7 @@ func DecodePayload(b []byte) (Payload, error) {
 		p.Attrs = attrs
 	}
 	if v, ok := m.First(codec.FBind); ok {
-		p.Bind = append([]byte(nil), v...)
+		p.Bind = v
 	}
 	if err := validatePayload(p); err != nil {
 		return p, err

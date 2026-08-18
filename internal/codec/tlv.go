@@ -12,12 +12,20 @@ type Map struct {
 	recs []Record
 }
 
+var decodeScratch []byte
+
 func NewMap() *Map { return &Map{} }
 
 func (m *Map) Add(id FieldID, v []byte) {
 	cp := make([]byte, len(v))
 	copy(cp, v)
 	m.recs = append(m.recs, Record{ID: id, Value: cp})
+}
+
+func (m *Map) addScratch(id FieldID, v []byte) {
+	off := len(decodeScratch)
+	decodeScratch = append(decodeScratch, v...)
+	m.recs = append(m.recs, Record{ID: id, Value: decodeScratch[off : off+len(v)]})
 }
 
 func (m *Map) AddString(id FieldID, s string) { m.Add(id, []byte(s)) }
@@ -88,6 +96,7 @@ func EncodeMap(m *Map, max int) ([]byte, error) {
 }
 
 func DecodeMap(b []byte, header bool, strictUnknown bool) (*Map, error) {
+	decodeScratch = decodeScratch[:0]
 	r := NewReader(b)
 	m := NewMap()
 	var last FieldID
@@ -120,7 +129,7 @@ func DecodeMap(b []byte, header bool, strictUnknown bool) (*Map, error) {
 		if seen[id] > 1 && !spec.Repeatable {
 			return nil, errDuplicate()
 		}
-		m.Add(id, val)
+		m.addScratch(id, val)
 		last = id
 		first = false
 	}
