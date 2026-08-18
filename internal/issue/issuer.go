@@ -42,6 +42,11 @@ func (i *Issuer) Issue(d Draft) ([]byte, string, token.Payload, error) {
 		if !i.nonces.Reserve(p.Nonce, p.ExpiresAt) {
 			return nil, "", token.Payload{}, fmt.Errorf("issue: nonce replay")
 		}
+		// Release the reservation on every exit path after a successful
+		// Reserve: success, a late ring/key failure, or a codec failure
+		// (e.g. issuer too long) must not leave the nonce stuck, otherwise
+		// a retry with the same nonce is falsely rejected as a replay.
+		defer i.nonces.Release(p.Nonce)
 	}
 	cur, err := i.ring.Current()
 	if err != nil {
@@ -50,9 +55,6 @@ func (i *Issuer) Issue(d Draft) ([]byte, string, token.Payload, error) {
 	raw, err := token.IssueBytes(cur.Material.KID, cur.Material.Alg, cur.Material.Secret, p)
 	if err != nil {
 		return nil, "", token.Payload{}, err
-	}
-	if i.nonces != nil && p.Nonce != "" {
-		i.nonces.Release(p.Nonce)
 	}
 	return raw, cur.Material.KID, p, nil
 }
