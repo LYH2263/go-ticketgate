@@ -20,7 +20,7 @@ func (r *Revoker) Reload() error {
 	}
 	jtis, err := r.persist.Load()
 	if err != nil {
-		return nil
+		return err
 	}
 	if r.exact != nil {
 		r.exact.Replace(jtis)
