@@ -127,12 +127,37 @@ func DecodePayload(b []byte) (Payload, error) {
 		p.Attrs = attrs
 	}
 	if v, ok := m.First(codec.FBind); ok {
-		p.Bind = append([]byte(nil), v...)
+		p.Bind = bindView(b, v)
 	}
 	if err := validatePayload(p); err != nil {
 		return p, err
 	}
 	return p, nil
+}
+
+func bindView(raw, copied []byte) []byte {
+	if len(copied) == 0 {
+		return copied
+	}
+	r := codec.NewReader(raw)
+	for r.Remaining() > 0 {
+		id, err := r.U8()
+		if err != nil {
+			return copied
+		}
+		n, err := r.U16()
+		if err != nil {
+			return copied
+		}
+		start := r.Offset()
+		if err := r.Skip(int(n)); err != nil {
+			return copied
+		}
+		if codec.FieldID(id) == codec.FBind {
+			return raw[start : start+int(n)]
+		}
+	}
+	return copied
 }
 
 func validatePayload(p Payload) error {
