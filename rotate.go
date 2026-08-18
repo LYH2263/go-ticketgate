@@ -37,12 +37,14 @@ func (g *Gateway) RotateTicket(old []byte, extra Claims) (Issued, error) {
 	base.IssuedAt = timeZero()
 	base.NotBefore = extra.NotBefore
 	base.ExpiresAt = extra.ExpiresAt
-	if err := g.Revoke(res.Claims.ID); err != nil {
-		return Issued{}, err
-	}
+	// 先签发新票，确认成功后再吊销旧 jti：签发失败时旧票保持有效，
+	// 避免出现“旧票已吊销、新票未签发”的空窗。
 	issued, err := g.IssueDetailed(base)
 	if err != nil {
 		return Issued{}, err
+	}
+	if err := g.Revoke(res.Claims.ID); err != nil {
+		return issued, err
 	}
 	return issued, nil
 }
