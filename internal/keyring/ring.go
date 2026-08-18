@@ -77,16 +77,20 @@ func (r *Ring) Close() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.closed = true
-	r.keys = nil
-	r.order = nil
-	r.current = ""
 }
 
 func (r *Ring) Get(kid string) (Key, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.closed {
+		return Key{}, fmt.Errorf("keyring: closed")
+	}
 	r.sweepLocked()
-	return cloneKey(r.keys[kid]), nil
+	k, ok := r.keys[kid]
+	if !ok {
+		return Key{}, fmt.Errorf("keyring: unknown kid")
+	}
+	return cloneKey(k), nil
 }
 
 func (r *Ring) LookupVerify(kid string) (Key, error) {

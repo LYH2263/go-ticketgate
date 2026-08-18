@@ -95,6 +95,9 @@ func (g *Gateway) Verify(raw []byte) (Claims, error) {
 func (g *Gateway) VerifyDetailed(raw []byte) (VerifyResult, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
+	if g.closed {
+		return VerifyResult{}, ErrClosed
+	}
 	o, err := g.ver.Verify(raw)
 	if err != nil {
 		g.trace.Record("verify", o.Header.KID, o.Payload.JTI, string(o.Stage), err)
