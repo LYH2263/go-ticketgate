@@ -112,7 +112,7 @@ func cloneKey(k *Key) Key {
 		Material: Material{
 			KID:    k.Material.KID,
 			Alg:    k.Material.Alg,
-			Secret: k.Material.Secret,
+			Secret: CloneSecret(k.Material.Secret),
 		},
 		Status:   k.Status,
 		Created:  k.Created,
