@@ -101,7 +101,7 @@ func DecodeMap(b []byte, header bool, strictUnknown bool) (*Map, error) {
 	for r.Remaining() > 0 {
 		id, val, err := r.TLV()
 		if err != nil {
-			return nil, fmt.Errorf("codec: corrupt")
+			return nil, fmt.Errorf("%w: %v", ErrCorrupt, err)
 		}
 		if !first && id < last {
 			return nil, errFieldOrder()

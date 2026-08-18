@@ -58,44 +58,44 @@ func Encode(h Header, p Payload, secret []byte) ([]byte, error) {
 func Split(raw []byte) (Envelope, error) {
 	var env Envelope
 	if len(raw) < codec.MinEnvelopeSize(32) {
-		return env, fmt.Errorf("token: truncated")
+		return env, fmt.Errorf("%w: truncated", ErrCorrupt)
 	}
 	if !codec.MagicOK(raw) {
-		return env, fmt.Errorf("token: bad magic")
+		return env, fmt.Errorf("%w: bad magic", ErrCorrupt)
 	}
 	r := codec.NewReader(raw)
 	if _, err := r.Slice(4); err != nil {
-		return env, err
+		return env, fmt.Errorf("%w: %v", ErrCorrupt, err)
 	}
 	ver, err := r.U8()
 	if err != nil {
-		return env, err
+		return env, fmt.Errorf("%w: %v", ErrCorrupt, err)
 	}
 	if ver != codec.VersionV1 {
 		return env, fmt.Errorf("token: unsupported version %d", ver)
 	}
 	hl, err := r.U16()
 	if err != nil {
-		return env, err
+		return env, fmt.Errorf("%w: %v", ErrCorrupt, err)
 	}
 	pl, err := r.U16()
 	if err != nil {
-		return env, err
+		return env, fmt.Errorf("%w: %v", ErrCorrupt, err)
 	}
 	if int(hl) > codec.MaxHeaderBytes || int(pl) > codec.MaxPayloadBytes {
 		return env, codec.ErrTooLarge()
 	}
 	hb, err := r.Slice(int(hl))
 	if err != nil {
-		return env, err
+		return env, fmt.Errorf("%w: %v", ErrCorrupt, err)
 	}
 	pb, err := r.Slice(int(pl))
 	if err != nil {
-		return env, err
+		return env, fmt.Errorf("%w: %v", ErrCorrupt, err)
 	}
 	mac := r.Rest()
 	if len(mac) != 32 && len(mac) != 48 && len(mac) != 64 {
-		return env, fmt.Errorf("token: mac length")
+		return env, fmt.Errorf("%w: mac length", ErrCorrupt)
 	}
 	env.Version = ver
 	env.Header = hb
