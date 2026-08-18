@@ -62,3 +62,28 @@ func (e *Exact) Forget(jti string) {
 	defer e.mu.Unlock()
 	delete(e.items, jti)
 }
+
+func (e *Exact) List() []string {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	out := make([]string, 0, len(e.items))
+	now := e.clk.Now()
+	for jti, ent := range e.items {
+		if !ent.Until.IsZero() && !now.Before(ent.Until) {
+			continue
+		}
+		out = append(out, jti)
+	}
+	return out
+}
+
+func (e *Exact) Replace(jtis []string) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	e.items = make(map[string]entry, len(jtis))
+	for _, jti := range jtis {
+		if jti != "" {
+			e.items[jti] = entry{}
+		}
+	}
+}

@@ -86,8 +86,11 @@ func Run(raw []byte, d Deps) Outcome {
 		return Outcome{Stage: StageAud, Header: h, Payload: p, Now: now, Err: fmt.Errorf("verify: audience mismatch")}
 	}
 
-	if d.Revoker != nil && p.JTI != "" && d.Revoker.IsRevoked(p.JTI) {
-		return Outcome{Stage: StageRevoke, Header: h, Payload: p, Now: now, Err: fmt.Errorf("verify: revoked")}
+	if d.Revoker != nil {
+		_ = d.Revoker.Reload()
+		if p.JTI != "" && d.Revoker.IsRevoked(p.JTI) {
+			return Outcome{Stage: StageRevoke, Header: h, Payload: p, Now: now, Err: fmt.Errorf("verify: revoked")}
+		}
 	}
 
 	if d.Nonces != nil && p.Nonce != "" {
