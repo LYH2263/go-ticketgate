@@ -116,7 +116,7 @@ func (g *Gateway) Revoke(jti string) error {
 	}
 	err := g.revoker.Revoke(jti, time.Time{})
 	g.trace.Record("revoke", "", jti, "", err)
-	return nil
+	return err
 }
 
 func (g *Gateway) IsRevoked(jti string) bool {

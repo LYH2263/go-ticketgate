@@ -34,6 +34,9 @@ func (r *Revoker) Revoke(jti string, until time.Time) error {
 	if jti == "" {
 		return fmt.Errorf("revoke: empty jti")
 	}
+	// Capture the prior exact entry so a failed persist can roll back the
+	// in-memory mutation below and leave no trace.
+	prev, hadPrev := r.exact.Get(jti)
 	switch r.mode {
 	case ModeExact:
 		r.exact.Revoke(jti, until)
@@ -44,7 +47,12 @@ func (r *Revoker) Revoke(jti string, until time.Time) error {
 		r.bloom.Add([]byte(jti))
 	}
 	if r.persist != nil {
-		_ = r.persist.Save(r.listJTIs())
+		if err := r.persist.Save(r.listJTIs()); err != nil {
+			// Persist failed: undo the in-memory revoke so memory and the
+			// persisted store stay consistent.
+			r.exact.Restore(jti, prev, hadPrev)
+			return err
+		}
 	}
 	return nil
 }

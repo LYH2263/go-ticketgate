@@ -63,6 +63,33 @@ func (e *Exact) Forget(jti string) {
 	delete(e.items, jti)
 }
 
+// Get returns the current entry for jti, if any. Used to capture prior state
+// so a revoke whose persist later fails can be rolled back exactly.
+func (e *Exact) Get(jti string) (entry, bool) {
+	if jti == "" {
+		return entry{}, false
+	}
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	ent, ok := e.items[jti]
+	return ent, ok
+}
+
+// Restore puts the entry for jti back to ent, or removes it when had is false.
+// It is the inverse of Revoke for the purpose of rolling back a failed persist.
+func (e *Exact) Restore(jti string, ent entry, had bool) {
+	if jti == "" {
+		return
+	}
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	if had {
+		e.items[jti] = ent
+	} else {
+		delete(e.items, jti)
+	}
+}
+
 func (e *Exact) List() []string {
 	e.mu.Lock()
 	defer e.mu.Unlock()
