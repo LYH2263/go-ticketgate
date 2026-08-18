@@ -1,6 +1,8 @@
 package ticketgate
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -17,6 +19,9 @@ import (
 func mapErr(err error) error {
 	if err == nil {
 		return nil
+	}
+	if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+		return err
 	}
 	s := err.Error()
 	switch {

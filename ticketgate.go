@@ -1,6 +1,7 @@
 package ticketgate
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -79,7 +80,11 @@ func (g *Gateway) IssueDetailed(claims Claims) (Issued, error) {
 }
 
 func (g *Gateway) Verify(raw []byte) (Claims, error) {
-	res, err := g.VerifyDetailed(raw)
+	return g.VerifyContext(context.Background(), raw)
+}
+
+func (g *Gateway) VerifyContext(ctx context.Context, raw []byte) (Claims, error) {
+	res, err := g.VerifyDetailedContext(ctx, raw)
 	if err != nil {
 		return Claims{}, err
 	}
@@ -87,12 +92,16 @@ func (g *Gateway) Verify(raw []byte) (Claims, error) {
 }
 
 func (g *Gateway) VerifyDetailed(raw []byte) (VerifyResult, error) {
+	return g.VerifyDetailedContext(context.Background(), raw)
+}
+
+func (g *Gateway) VerifyDetailedContext(ctx context.Context, raw []byte) (VerifyResult, error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
 	if g.closed {
 		return VerifyResult{}, ErrClosed
 	}
-	o, err := g.ver.Verify(raw)
+	o, err := g.ver.VerifyContext(ctx, raw)
 	if err != nil {
 		g.trace.Record("verify", o.Header.KID, o.Payload.JTI, string(o.Stage), err)
 		return VerifyResult{}, mapErr(err)

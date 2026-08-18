@@ -1,6 +1,7 @@
 package verify
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/LYH2263/go-ticketgate/internal/audience"
@@ -30,6 +31,11 @@ type Deps struct {
 }
 
 func Run(raw []byte, d Deps) Outcome {
+	return RunContext(context.Background(), raw, d)
+}
+
+func RunContext(ctx context.Context, raw []byte, d Deps) Outcome {
+	_ = ctx
 	if d.Clock == nil {
 		d.Clock = clock.Real{}
 	}

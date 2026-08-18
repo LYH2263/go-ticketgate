@@ -1,5 +1,7 @@
 package verify
 
+import "context"
+
 type Verifier struct {
 	deps Deps
 }
@@ -9,7 +11,11 @@ func New(d Deps) *Verifier {
 }
 
 func (v *Verifier) Verify(token []byte) (Outcome, error) {
-	o := Run(token, v.deps)
+	return v.VerifyContext(context.Background(), token)
+}
+
+func (v *Verifier) VerifyContext(ctx context.Context, token []byte) (Outcome, error) {
+	o := RunContext(ctx, token, v.deps)
 	if o.Err != nil {
 		return o, o.Err
 	}
