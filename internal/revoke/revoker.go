@@ -44,7 +44,12 @@ func (r *Revoker) Revoke(jti string, until time.Time) error {
 		r.bloom.Add([]byte(jti))
 	}
 	if r.persist != nil {
-		_ = r.persist.Save(r.listJTIs())
+		if err := r.persist.Save(r.listJTIs()); err != nil {
+			if r.exact != nil {
+				r.exact.Forget(jti)
+			}
+			return err
+		}
 	}
 	return nil
 }
