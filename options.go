@@ -27,7 +27,8 @@ type config struct {
 	requireSub bool
 	scopes     []string
 	traceCap   int
-	useGlob    bool
+	useGlob        bool
+	revokePersist  revoke.Persist
 }
 
 func defaultConfig() config {
@@ -121,6 +122,10 @@ func WithGlobAudience() Option {
 
 func WithTraceCap(n int) Option {
 	return func(cfg *config) { cfg.traceCap = n }
+}
+
+func WithRevokePersist(p revoke.Persist) Option {
+	return func(cfg *config) { cfg.revokePersist = p }
 }
 
 func (c config) policy() issue.Policy {

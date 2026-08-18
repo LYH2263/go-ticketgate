@@ -16,9 +16,10 @@ const (
 )
 
 type Revoker struct {
-	mode  Mode
-	exact *Exact
-	bloom *Bloom
+	mode    Mode
+	exact   *Exact
+	bloom   *Bloom
+	persist Persist
 }
 
 func New(clk clock.Clock, mode Mode) *Revoker {
@@ -41,6 +42,9 @@ func (r *Revoker) Revoke(jti string, until time.Time) error {
 	case ModeBoth:
 		r.exact.Revoke(jti, until)
 		r.bloom.Add([]byte(jti))
+	}
+	if r.persist != nil {
+		_ = r.persist.Save(r.listJTIs())
 	}
 	return nil
 }
