@@ -129,7 +129,7 @@ func DecodeMap(b []byte, header bool, strictUnknown bool) (*Map, error) {
 		if seen[id] > 1 && !spec.Repeatable {
 			return nil, errDuplicate()
 		}
-		m.addScratch(id, val)
+		m.Add(id, val)
 		last = id
 		first = false
 	}
