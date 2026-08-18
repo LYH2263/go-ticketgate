@@ -66,10 +66,6 @@ func Run(raw []byte, d Deps) Outcome {
 		return fail(StageMAC, fmt.Errorf("verify: bad mac"))
 	}
 
-	off := 9 + len(env.Header)
-	if off+len(env.Payload) <= len(raw) {
-		env.Payload = raw[off : off+len(env.Payload)]
-	}
 	p, err := token.DecodePayload(env.Payload)
 	if err != nil {
 		return fail(StageParse, err)

@@ -106,7 +106,7 @@ func claimsFrom(p token.Payload) Claims {
 		Nonce:     p.Nonce,
 		Scope:     append([]string(nil), p.Scope...),
 		Attrs:     attrs,
-		Bind:      p.Bind,
+		Bind:      append([]byte(nil), p.Bind...),
 	}
 }
 
