@@ -37,11 +37,11 @@ func (g *Gateway) RotateTicket(old []byte, extra Claims) (Issued, error) {
 	base.IssuedAt = timeZero()
 	base.NotBefore = extra.NotBefore
 	base.ExpiresAt = extra.ExpiresAt
-	if err := g.Revoke(res.Claims.ID); err != nil {
-		return Issued{}, err
-	}
 	issued, err := g.IssueDetailed(base)
 	if err != nil {
+		return Issued{}, err
+	}
+	if err := g.Revoke(res.Claims.ID); err != nil {
 		return Issued{}, err
 	}
 	return issued, nil

@@ -35,9 +35,6 @@ func Build(now time.Time, pol Policy, d Draft) (token.Payload, error) {
 	if pol.MaxAudiences > 0 && len(aud) > pol.MaxAudiences {
 		return token.Payload{}, fmt.Errorf("issue: too many aud")
 	}
-	if len(aud) > 8 {
-		return token.Payload{}, fmt.Errorf("issue: too many aud")
-	}
 	if pol.RequireSub && d.Subject == "" {
 		return token.Payload{}, fmt.Errorf("issue: sub required")
 	}
