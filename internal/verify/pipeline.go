@@ -35,7 +35,12 @@ func Run(raw []byte, d Deps) Outcome {
 }
 
 func RunContext(ctx context.Context, raw []byte, d Deps) Outcome {
-	_ = ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if err := ctx.Err(); err != nil {
+		return fail(StageParse, err)
+	}
 	if d.Clock == nil {
 		d.Clock = clock.Real{}
 	}
@@ -77,9 +82,14 @@ func RunContext(ctx context.Context, raw []byte, d Deps) Outcome {
 		return fail(StageParse, err)
 	}
 
-	if err := CheckTime(p, now, d.Skew); err != nil {
+	if expired, early, err := d.Skew.CheckContext(ctx, now, p.NotBefore, p.ExpiresAt); err != nil {
 		return Outcome{Stage: StageTime, Header: h, Payload: p, Now: now, Err: err}
+	} else if early {
+		return Outcome{Stage: StageTime, Header: h, Payload: p, Now: now, Err: fmt.Errorf("verify: not yet valid")}
+	} else if expired {
+		return Outcome{Stage: StageTime, Header: h, Payload: p, Now: now, Err: fmt.Errorf("verify: expired")}
 	}
+	_ = CheckTime
 
 	issOK, subOK, audOK := d.Expect.Audience.Check(p.Issuer, p.Subject, p.Audience)
 	if !issOK {

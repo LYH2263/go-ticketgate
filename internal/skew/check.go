@@ -26,7 +26,11 @@ func (w Window) Check(now, nbf, exp time.Time) (expired, early bool) {
 }
 
 func (w Window) CheckContext(ctx context.Context, now, nbf, exp time.Time) (expired, early bool, err error) {
-	_ = ctx
+	if ctx != nil {
+		if err := ctx.Err(); err != nil {
+			return false, false, err
+		}
+	}
 	return Expired(now, exp, w.Skew), TooEarly(now, nbf, w.Skew), nil
 }
 
