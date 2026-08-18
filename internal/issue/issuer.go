@@ -5,13 +5,15 @@ import (
 
 	"github.com/LYH2263/go-ticketgate/internal/clock"
 	"github.com/LYH2263/go-ticketgate/internal/keyring"
+	"github.com/LYH2263/go-ticketgate/internal/nonce"
 	"github.com/LYH2263/go-ticketgate/internal/token"
 )
 
 type Issuer struct {
-	ring *keyring.Ring
-	clk  clock.Clock
-	pol  Policy
+	ring   *keyring.Ring
+	clk    clock.Clock
+	pol    Policy
+	nonces *nonce.Cache
 }
 
 func New(ring *keyring.Ring, clk clock.Clock, pol Policy) *Issuer {
@@ -24,6 +26,8 @@ func New(ring *keyring.Ring, clk clock.Clock, pol Policy) *Issuer {
 	return &Issuer{ring: ring, clk: clk, pol: pol}
 }
 
+func (i *Issuer) SetNonceCache(nc *nonce.Cache) { i.nonces = nc }
+
 func (i *Issuer) Policy() Policy { return i.pol }
 
 func (i *Issuer) Issue(d Draft) ([]byte, string, token.Payload, error) {
@@ -34,7 +38,7 @@ func (i *Issuer) Issue(d Draft) ([]byte, string, token.Payload, error) {
 	if err != nil {
 		return nil, "", token.Payload{}, err
 	}
-	cur, err := i.ring.Current()
+	cur, err := i.ring.CurrentRef()
 	if err != nil {
 		return nil, "", token.Payload{}, err
 	}
